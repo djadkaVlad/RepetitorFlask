@@ -9,7 +9,12 @@ import calendar
 from datetime import datetime
 
 
-
+week =  {
+    'mon':"Понедельник",'tue':"Вторник",
+         'wed':"Среда",'thu':"Четверг",
+         'fri':"Пятница",'sat':"Суббота",
+         'sun':"Воскресенье"
+}
 
 
 
