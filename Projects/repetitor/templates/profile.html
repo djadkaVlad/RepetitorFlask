@@ -36,7 +36,7 @@
                         {% for hour,free in hours.items() %}
                                 {% if free %}
                                 <a href={{ url_for('booking_page',id_teacher=teachers[id].id ,day=day,time=hour) }} class="btn btn-outline-success  mr-2">{{hour}} свободно</a>
-                                <p>{{day}}</p>
+
                                 {% endif %}
                         {% endfor %}
                     {% else %}

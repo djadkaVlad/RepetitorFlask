@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+import dotenv
 import flask
 from pprint import pprint
 from flask import Flask, request, redirect, url_for, render_template
@@ -5,15 +8,17 @@ import flask_wtf
 import wtforms
 import data
 import calendar
-
 from datetime import datetime
 
 
+load_dotenv()
+
+SECRET_KEY = os.getenv('SECRET_KEY')
 week =  {
     'mon':"Понедельник",'tue':"Вторник",
-         'wed':"Среда",'thu':"Четверг",
-         'fri':"Пятница",'sat':"Суббота",
-         'sun':"Воскресенье"
+    'wed':"Среда",'thu':"Четверг",
+    'fri':"Пятница",'sat':"Суббота",
+    'sun':"Воскресенье"
 }
 
 
@@ -33,6 +38,7 @@ class SubscriptionForm(flask_wtf.FlaskForm):
 
 app = Flask(__name__)
 
+app.config['SECRET_KEY'] = SECRET_KEY
 
 
 
@@ -83,8 +89,7 @@ def request_done_page():
 
 @app.route('/booking/<int:id_teacher>/<day>/<time>/', methods=['GET', 'POST'])
 def booking_page(id_teacher,day,time):
-
-    return render_template('booking.html',id_teacher=id_teacher,day=day,time=time,teachers=data.teachers)
+    return render_template('booking.html',id_teacher=id_teacher,day=day,time=time,teachers=data.teachers,week=week[day])
 
 @app.route('/booking_done/', methods=['GET', 'POST'])
 def booking_done_page():
