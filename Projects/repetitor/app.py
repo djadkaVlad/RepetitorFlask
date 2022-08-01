@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 import dotenv
@@ -10,24 +11,28 @@ import data
 import calendar
 from datetime import datetime
 
-
 load_dotenv()
+booking_base_file = 'booking.json'
+open(booking_base_file, mode='a').close()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-week =  {
-    'mon':"Понедельник",'tue':"Вторник",
-    'wed':"Среда",'thu':"Четверг",
-    'fri':"Пятница",'sat':"Суббота",
-    'sun':"Воскресенье"
+week = {
+    'mon': "Понедельник", 'tue': "Вторник",
+    'wed': "Среда", 'thu': "Четверг",
+    'fri': "Пятница", 'sat': "Суббота",
+    'sun': "Воскресенье"
 }
 
 
+def add_client(name,phone):
+    dump = json.dumps(name)
+    with open(booking_base_file, 'a') as booking_base:
+        booking_base.write(dump)
 
 def check_notfree_values(dictionary):
     '''Проверяет все значения в словаре'''
     free = all(value == False for value in dictionary.values())
     return free
-
 
 
 class SubscriptionForm(flask_wtf.FlaskForm):
@@ -41,8 +46,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 
 
-
-
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -50,8 +53,7 @@ def page_not_found(e):
 
 @app.route('/')
 def home():
-
-    return render_template('index.html',goals=data.goals,teachers=data.teachers)
+    return render_template('index.html', goals=data.goals, teachers=data.teachers)
 
 
 @app.route('/all/')
@@ -65,35 +67,41 @@ def goal_page(goal=None):
     return render_template('goal.html')
 
 
-
 @app.route('/profiles/<int:id>/')
 def profile_page(id):
     available = []
     grafik_free = data.teachers[id]['free']
-    for key,value in grafik_free.items():
+    for key, value in grafik_free.items():
         ret = check_notfree_values(value)
         available.append(ret)
-    print(available)
-    # print(check_values(grafik_free))
-
-    return render_template('profile.html',id=id,goals=data.goals,teachers=data.teachers,available=available)
+    return render_template('profile.html', id=id, goals=data.goals, teachers=data.teachers, available=available)
 
 
 @app.route('/request/', methods=['GET', 'POST'])
 def request_page():
     return render_template('request.html')
 
+
 @app.route('/request_done/', methods=['GET', 'POST'])
 def request_done_page():
     return render_template('request_done.html')
 
-@app.route('/booking/<int:id_teacher>/<day>/<time>/', methods=['GET', 'POST'])
-def booking_page(id_teacher,day,time):
-    return render_template('booking.html',id_teacher=id_teacher,day=day,time=time,teachers=data.teachers,week=week[day])
 
-@app.route('/booking_done/', methods=['GET', 'POST'])
+@app.route('/booking/<int:id_teacher>/<day>/<time>/', methods=['GET','POST'])
+def booking_page(id_teacher, day, time):
+    if request.method == 'GET':
+        return render_template('booking.html', id_teacher=id_teacher, day=day, time=time, teachers=data.teachers,
+                           week=week[day])
+
+
+@app.route('/booking_done/', methods=['POST'])
 def booking_done_page():
-    return render_template('booking_done.html')
+
+    client_phone = request.form.get('clientPhone')
+    client_name  = request.form.get('clientName')
+    add_client(client_name)
+    return render_template('booking_done.html', client_phone =client_phone ,client_name=client_name)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
